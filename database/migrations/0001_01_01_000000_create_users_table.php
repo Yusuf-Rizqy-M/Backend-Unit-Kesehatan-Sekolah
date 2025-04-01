@@ -18,6 +18,15 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('role', ['admin', 'user'])->default('user'); // Menambahkan role
+            $table->string('phone_number')->nullable(); // Bisa null
+            $table->enum('gender', ['male', 'female'])->nullable(); // Bisa null
+            $table->enum('name_grades', ['RPL', 'Animasi', 'DKV'])->nullable(); // ENUM untuk jurusan
+            $table->enum('class', ['X', 'XI', 'XII'])->nullable(); // ENUM untuk kelas
+            $table->string('no_hp_parent')->nullable(); // Bisa null
+            $table->string('name_parent')->nullable(); // Bisa null
+            $table->string('name_walikelas')->nullable(); // Bisa null
+            $table->text('address_walikelas')->nullable(); // Bisa null
+            $table->integer('absent')->nullable(); // Bisa null
             $table->rememberToken();
             $table->timestamps();
         });

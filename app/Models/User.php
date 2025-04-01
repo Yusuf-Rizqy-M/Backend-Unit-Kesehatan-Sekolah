@@ -23,6 +23,15 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'phone_number',
+        'gender',
+        'name_grades',
+        'class',
+        'no_hp_parent',
+        'name_parent',
+        'name_walikelas',
+        'address_walikelas',
+        'absent',
     ];
 
     /**
@@ -45,6 +54,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'absent' => 'integer', // memastikan absent selalu integer
         ];
     }
 }

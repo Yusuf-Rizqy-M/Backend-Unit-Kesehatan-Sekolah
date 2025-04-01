@@ -109,4 +109,24 @@ class AuthController extends Controller
             ], 401);
         }
     }
+
+    public function logout(Request $request)
+    {
+        $user = User::where('id',$request->user()->id)->first();
+        if($user) 
+        {
+             $user->tokens()->delete();
+ 
+             return response()->json([
+                 'meesage' => 'Logged out successfully',
+             ], 200);
+        } 
+        else 
+        {
+             return response()->json([
+                 'meesage' => 'User Not Found',
+             ], 404);
+        }
+    }
+    
 }
