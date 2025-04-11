@@ -30,7 +30,6 @@ class User extends Authenticatable
         'no_hp_parent',
         'name_parent',
         'name_walikelas',
-        'address_walikelas',
         'absent',
     ];
 
@@ -57,4 +56,9 @@ class User extends Authenticatable
             'absent' => 'integer', // memastikan absent selalu integer
         ];
     }
+    public function conditions()
+    {
+        return $this->hasMany(HealthCondition::class);
+    }
+
 }

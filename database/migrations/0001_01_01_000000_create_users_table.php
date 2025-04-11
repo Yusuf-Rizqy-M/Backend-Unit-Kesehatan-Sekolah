@@ -17,25 +17,20 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'user'])->default('user'); // Menambahkan role
-            $table->string('phone_number')->nullable(); // Bisa null
-            $table->enum('gender', ['male', 'female'])->nullable(); // Bisa null
-            $table->enum('name_grades', ['RPL', 'Animasi', 'DKV'])->nullable(); // ENUM untuk jurusan
-            $table->enum('class', ['X', 'XI', 'XII'])->nullable(); // ENUM untuk kelas
-            $table->string('no_hp_parent')->nullable(); // Bisa null
-            $table->string('name_parent')->nullable(); // Bisa null
-            $table->string('name_walikelas')->nullable(); // Bisa null
-            $table->text('address_walikelas')->nullable(); // Bisa null
-            $table->integer('absent')->nullable(); // Bisa null
+            $table->enum('role', ['admin', 'user'])->default('user');
+            $table->unsignedBigInteger('phone_number')->nullable(); 
+            $table->enum('gender', ['male', 'female'])->nullable();
+            $table->enum('name_grades', ['RPL', 'Animasi', 'DKV'])->nullable();
+            $table->enum('class', ['X', 'XI', 'XII'])->nullable();
+            $table->unsignedBigInteger('no_hp_parent')->nullable(); 
+            $table->string('name_parent')->nullable();
+            $table->string('name_walikelas')->nullable();
+            $table->unsignedTinyInteger('absent')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
+    
 
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();

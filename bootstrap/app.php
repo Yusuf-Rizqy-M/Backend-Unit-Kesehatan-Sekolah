@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'check_token_expiry' => \App\Http\Middleware\CheckTokenExpiry::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
