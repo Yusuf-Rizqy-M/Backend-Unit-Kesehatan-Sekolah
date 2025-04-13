@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('phone_number')->nullable(); 
             $table->enum('gender', ['male', 'female'])->nullable();
             $table->enum('name_grades', ['RPL', 'Animasi', 'DKV'])->nullable();
-            $table->enum('class', ['X', 'XI', 'XII'])->nullable();
+            $table->enum('class', ['10', '11', '12'])->nullable();
             $table->unsignedBigInteger('no_hp_parent')->nullable(); 
             $table->string('name_parent')->nullable();
             $table->string('name_walikelas')->nullable();

@@ -95,7 +95,7 @@ class UserController extends Controller
             'phone_number' => 'sometimes|numeric|digits_between:10,15',
             'gender' => 'sometimes|in:male,female',
             'name_grades' => 'sometimes|in:RPL,Animasi,DKV',
-            'class' => 'sometimes|in:X,XI,XII',
+            'class' => 'sometimes|in:10,11,12',
             'no_hp_parent' => 'sometimes|numeric|digits_between:10,15',
             'name_parent' => 'sometimes|string|max:255',
             'name_walikelas' => 'sometimes|string|max:255',
