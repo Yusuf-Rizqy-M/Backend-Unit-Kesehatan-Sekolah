@@ -25,12 +25,13 @@ class User extends Authenticatable
         'role',
         'phone_number',
         'gender',
-        'name_grades',
+        'name_department',
         'class',
         'no_hp_parent',
         'name_parent',
         'name_walikelas',
         'absent',
+        'name_grades'
     ];
 
     /**
@@ -60,5 +61,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(HealthCondition::class);
     }
-
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class);
+    }
 }

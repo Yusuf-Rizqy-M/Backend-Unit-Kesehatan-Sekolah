@@ -13,6 +13,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $this->call([
+            DepartmentSeeder::class,
+            GradeSeeder::class,
+        ]);
         // Tambahkan Admin Default
         User::create([
             'name' => 'Admin_uks',
