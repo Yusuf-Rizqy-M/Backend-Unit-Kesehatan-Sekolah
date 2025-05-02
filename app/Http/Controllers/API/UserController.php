@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
-
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -124,39 +124,14 @@ class UserController extends Controller
         $user = Auth::user();
     
         $validator = Validator::make($request->all(), [
-            // 'name' tidak bisa diubah, jadi dihapus dari validasi
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
             'phone_number' => 'sometimes|numeric|digits_between:10,15',
             'gender' => 'sometimes|in:male,female',
-            'name_department' => 'sometimes|in:RPL,Animasi 2D,Animasi 3D,DKV DG,DKV TG',
-            'class' => 'sometimes|in:10,11,12',
             'no_hp_parent' => 'sometimes|numeric|digits_between:10,15',
             'name_parent' => 'sometimes|string|max:255',
             'name_walikelas' => 'sometimes|string|max:255',
             'absent' => 'sometimes|integer|min:1|max:40',
-            'name_grades' => 'sometimes|in:Animasi 3D 1,Animasi 3D 2,Animasi 3D 3,Animasi 2D 4,Animasi 2D 5,RPL 1,RPL 2,DKV DG 1,DKV DG 2,DKV DG 3,DKV TG 4,DKV TG 5',
         ]);
-    
-        // Validasi kombinasi name_department dan name_grades
-        $validator->after(function ($validator) use ($request) {
-            $class = $request->input('class');
-            $department = $request->input('name_department');
-            $grade = $request->input('name_grades');
-    
-            $rules = [
-                'RPL' => ['RPL 1', 'RPL 2'],
-                'Animasi 3D' => ['Animasi 3D 1', 'Animasi 3D 2', 'Animasi 3D 3'],
-                'Animasi 2D' => ['Animasi 2D 4', 'Animasi 2D 5'],
-                'DKV DG' => ['DKV DG 1', 'DKV DG 2', 'DKV DG 3'],
-                'DKV TG' => ['DKV TG 4', 'DKV TG 5'],
-            ];
-    
-            if ($class && $department && $grade) {
-                if (isset($rules[$department]) && !in_array($grade, $rules[$department])) {
-                    $validator->errors()->add('name_grades', 'Kelas dan jurusan tidak cocok dengan name_grades yang dipilih.');
-                }
-            }
-        });
     
         if ($validator->fails()) {
             return response()->json([
@@ -166,8 +141,8 @@ class UserController extends Controller
             ], 422);
         }
     
-        // Filter request agar 'name' tidak bisa diubah
-        $data = $request->except('name');
+        // Ambil data yang boleh diubah
+        $data = $request->except(['name', 'class', 'name_grades', 'name_department']);
         $user->fill($data);
         $user->save();
     

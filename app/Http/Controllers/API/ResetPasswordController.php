@@ -9,32 +9,36 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Mail\OtpMail;
+use Illuminate\Support\Facades\Mail;
 
 class ResetPasswordController extends Controller
 {
     public function requestReset(Request $request)
     {
         $request->validate(['email' => 'required|email']);
-
+    
         $user = User::where('email', $request->email)->first();
-
+    
         // untuk keamanan, jangan beri tahu kalau email tidak terdaftar
         if (!$user) return response()->json(['message' => 'Jika email terdaftar, token telah dikirim.']);
-
-        $token = random_int(1000, 9999); // token 4 digit
-
+    
+        $otp = random_int(1000, 9999); // OTP 4 digit
+    
         DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $request->email],
             [
-                'token' => $token,
+                'token' => $otp,
                 'created_at' => now()
             ]
         );
-
-        $user->notify(new ResetPasswordNotification($token));
-
+    
+        // Kirim OTP via email menggunakan OtpMail
+        Mail::to($request->email)->send(new OtpMail($otp));
+    
         return response()->json(['message' => 'Jika email terdaftar, token telah dikirim.']);
     }
+    
 
     public function resetPassword(Request $request)
     {

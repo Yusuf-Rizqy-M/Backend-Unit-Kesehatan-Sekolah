@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DepartmentSeeder::class,
             GradeSeeder::class,
+            CategorySeeder::class
         ]);
         // Tambahkan Admin Default
         User::create([
