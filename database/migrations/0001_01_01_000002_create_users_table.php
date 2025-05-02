@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,10 +16,8 @@ return new class extends Migration {
             $table->enum('role', ['admin', 'user'])->default('user');
             $table->unsignedBigInteger('phone_number')->nullable();
             $table->enum('gender', ['male', 'female'])->nullable();
-            $table->enum('name_department', ['RPL', 'Animasi 2D','Animasi 3D','DKV DG', 'DKV TG'])->nullable();
-            $table->enum('class', ['10', '11', '12'])->nullable();
-
-            // Tambahkan langsung di tabel user
+            $table->enum('name_department', ['RPL', 'Animasi 2D', 'Animasi 3D', 'DKV DG', 'DKV TG'])->nullable();
+            $table->enum('class', ['10', '11', '12', 'lulus', 'pindah'])->nullable();
             $table->enum('name_grades', [
                 'Animasi 3D 1',
                 'Animasi 3D 2',
@@ -33,6 +32,7 @@ return new class extends Migration {
                 'DKV TG 4',
                 'DKV TG 5',
             ])->nullable();
+
             $table->unsignedBigInteger('no_hp_parent')->nullable();
             $table->string('name_parent')->nullable();
             $table->string('name_walikelas')->nullable();

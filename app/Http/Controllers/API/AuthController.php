@@ -13,7 +13,7 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        // Pastikan hanya admin yang bisa mendaftarkan user baru (opsional)
+        // Hanya admin yang bisa daftarin user
         if (Auth::check() && Auth::user()->role !== 'admin') {
             return response()->json([
                 'status' => false,
@@ -21,39 +21,63 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Validasi input
+        // Validasi
         $rules = [
             'name' => 'required|string|min:3|max:255',
             'email' => 'required|email:rfc,dns|unique:users,email',
             'password' => 'required|string|min:8|max:255',
             'confirm_password' => 'required|same:password',
-            'role' => 'required|in:admin,user'
+            'role' => 'required|in:admin,user',
+            'class' => 'required|in:10,11,12',
+            'name_department' => 'required|in:RPL,Animasi 3D,Animasi 2D,DKV DG,DKV TG',
+            'name_grades' => 'required|string',
         ];
 
         $customMessages = [
             'email.email' => 'Jangan pakai email asal-asalan',
-            'role.in' => 'Role harus admin atau user'
+            'role.in' => 'Role harus admin atau user',
         ];
 
         $validator = Validator::make($request->all(), $rules, $customMessages);
 
+        // Validasi kombinasi jurusan dan kelas
+        $validator->after(function ($validator) use ($request) {
+            $department = $request->input('name_department');
+            $grade = $request->input('name_grades');
+
+            $rules = [
+                'RPL' => ['RPL 1', 'RPL 2'],
+                'Animasi 3D' => ['Animasi 3D 1', 'Animasi 3D 2', 'Animasi 3D 3'],
+                'Animasi 2D' => ['Animasi 2D 4', 'Animasi 2D 5'],
+                'DKV DG' => ['DKV DG 1', 'DKV DG 2', 'DKV DG 3'],
+                'DKV TG' => ['DKV TG 4', 'DKV TG 5'],
+            ];
+
+            if (isset($rules[$department]) && !in_array($grade, $rules[$department])) {
+                $validator->errors()->add('name_grades', 'Kelas dan jurusan tidak cocok dengan name_grades yang dipilih.');
+            }
+        });
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'All fields are required',
+                'message' => 'Validation failed',
                 'data' => $validator->errors()
             ], 422);
         }
 
-        // Buat user baru
+        // Simpan user
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role' => $request->role
+            'role' => $request->role,
+            'class' => $request->class,
+            'name_department' => $request->name_department,
+            'name_grades' => $request->name_grades,
         ]);
 
-        // Buat token untuk autentikasi
+        // Buat token
         $success['token'] = $user->createToken('auth_token')->plainTextToken;
         $success['name'] = $user->name;
         $success['role'] = $user->role;
@@ -138,4 +162,73 @@ class AuthController extends Controller
             ], 404);
         }
     }
+    public function updateClassAndDepartment(Request $request, $id)
+    {
+        // Hanya admin yang boleh akses
+        if (Auth::check() && Auth::user()->role !== 'admin') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Only admins can update class and department.'
+            ], 403);
+        }
+    
+        // Validasi input, semua field opsional tapi jika diisi, harus valid
+        $validator = Validator::make($request->all(), [
+            'name_department' => 'nullable|in:RPL,Animasi 2D,Animasi 3D,DKV DG,DKV TG',
+            'class' => 'nullable|in:10,11,12,lulus,pindah',
+            'name_grades' => 'nullable|string',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+    
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+    
+        $department = $request->input('name_department');
+        $grade = $request->input('name_grades');
+        $class = $request->input('class');
+    
+        // Validasi kombinasi jurusan dan kelas hanya jika keduanya tersedia
+        $rules = [
+            'RPL' => ['RPL 1', 'RPL 2'],
+            'Animasi 3D' => ['Animasi 3D 1', 'Animasi 3D 2', 'Animasi 3D 3'],
+            'Animasi 2D' => ['Animasi 2D 4', 'Animasi 2D 5'],
+            'DKV DG' => ['DKV DG 1', 'DKV DG 2', 'DKV DG 3'],
+            'DKV TG' => ['DKV TG 4', 'DKV TG 5'],
+        ];
+    
+        if ($department && $grade && !in_array($class, ['lulus', 'pindah'])) {
+            if (!in_array($grade, $rules[$department] ?? [])) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Kelas dan jurusan tidak cocok dengan name_grades yang dipilih.'
+                ], 422);
+            }
+        }
+    
+        // Update hanya field yang dikirim
+        if ($class) $user->class = $class;
+        if ($grade) $user->name_grades = $grade;
+        if ($department) $user->name_department = $department;
+    
+        $user->save();
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'User class and department updated successfully',
+            'data' => $user
+        ], 200);
+    }
+    
 }
