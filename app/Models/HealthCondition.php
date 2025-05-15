@@ -10,8 +10,18 @@ class HealthCondition extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'admin_id',
-        'tension', 'temperature', 'height', 'weight', 'spo2'
+        'user_id', 
+        'admin_id',
+        'id_user_condition', // ✅ Tambahkan ini
+        'tension', 
+        'temperature', 
+        'height', 
+        'weight', 
+        'spo2',
+        'pulse', 
+        'therapy', 
+        'anamnesis',
+        'status'
     ];
 
     public function user()

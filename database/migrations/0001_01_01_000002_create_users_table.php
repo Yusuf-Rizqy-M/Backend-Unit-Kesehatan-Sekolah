@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('phone_number')->nullable();
             $table->enum('gender', ['male', 'female'])->nullable();
             $table->enum('name_department', ['RPL', 'Animasi 2D', 'Animasi 3D', 'DKV DG', 'DKV TG'])->nullable();
-            $table->enum('class', ['10', '11', '12', 'lulus', 'pindah'])->nullable();
+            $table->enum('class', ['10', '11', '12', 'Lulus', 'Keluar'])->nullable();
             $table->enum('name_grades', [
                 'Animasi 3D 1',
                 'Animasi 3D 2',
@@ -32,11 +32,11 @@ return new class extends Migration {
                 'DKV TG 4',
                 'DKV TG 5',
             ])->nullable();
-
             $table->unsignedBigInteger('no_hp_parent')->nullable();
             $table->string('name_parent')->nullable();
             $table->string('name_walikelas')->nullable();
             $table->unsignedTinyInteger('absent')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->rememberToken();
             $table->timestamps();
         });
@@ -55,6 +55,5 @@ return new class extends Migration {
     {
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('users');
-        Schema::dropIfExists('grades');
     }
 };

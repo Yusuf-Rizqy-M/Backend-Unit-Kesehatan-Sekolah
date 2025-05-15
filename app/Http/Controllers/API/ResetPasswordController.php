@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Mail\OtpMail;
 use Illuminate\Support\Facades\Mail;
+use Exception;
 
 class ResetPasswordController extends Controller
 {
@@ -20,8 +21,9 @@ class ResetPasswordController extends Controller
     
         $user = User::where('email', $request->email)->first();
     
-        // untuk keamanan, jangan beri tahu kalau email tidak terdaftar
-        if (!$user) return response()->json(['message' => 'Jika email terdaftar, token telah dikirim.']);
+        if (!$user) {
+            return response()->json(['message' => 'Email tidak terdaftar.'], 404);
+        }
     
         $otp = random_int(1000, 9999); // OTP 4 digit
     
@@ -33,13 +35,18 @@ class ResetPasswordController extends Controller
             ]
         );
     
-        // Kirim OTP via email menggunakan OtpMail
-        Mail::to($request->email)->send(new OtpMail($otp));
+        try {
+            // Kirim OTP via email menggunakan OtpMail
+            Mail::to($request->email)->send(new OtpMail($otp));
+        } catch (Exception $e) {
+            // Log detailed error if email sending fails
+            \Log::error('Failed to send OTP email to ' . $request->email . ': ' . $e->getMessage());
+            return response()->json(['message' => 'Gagal mengirim email OTP. Silakan coba lagi.'], 500);
+        }
     
-        return response()->json(['message' => 'Jika email terdaftar, token telah dikirim.']);
+        return response()->json(['message' => 'Token OTP telah dikirim ke email Anda.'], 200);
     }
     
-
     public function resetPassword(Request $request)
     {
         $request->validate([
@@ -92,5 +99,4 @@ class ResetPasswordController extends Controller
     
         return response()->json(['message' => 'Token valid.']);
     }
-    
 }

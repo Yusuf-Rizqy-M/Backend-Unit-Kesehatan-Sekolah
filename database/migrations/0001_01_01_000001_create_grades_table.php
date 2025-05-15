@@ -10,12 +10,12 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        // database/migrations/..._create_grades_table.php
         Schema::create('grades', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedTinyInteger('class');
+            $table->enum('class', ['10', '11', '12']);
             $table->foreignId('department_id')->constrained()->onDelete('cascade');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
     }

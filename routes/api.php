@@ -17,16 +17,16 @@ Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword']
 Route::post('/verify-otp', [ResetPasswordController::class, 'verifyOtp']);
 Route::get('/categories/{categoryId}/article/{articleId}/summary', [BlogController::class, 'getCategoryArticleSummary']);
 Route::get('/categories/{categoryId}/article/{articleId}', [BlogController::class, 'getCategoryArticleDetail']);
-Route::get('/categories', [BlogController::class, 'getCategories']);
+Route::get('categories/{id}', [BlogController::class, 'getCategory']);
+Route::get('categories', [BlogController::class, 'getCategories']);
 Route::get('/categories/{id}/articles', [BlogController::class, 'getArticlesByCategory']);
-
 Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
     // Umum (user & admin)
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [UserController::class, 'show']);
     Route::put('/user/update', [UserController::class, 'update']);
-    Route::get('/health-conditions-one', [HealthConditionController::class, 'show']);
     Route::post('/update-player-id', [UserController::class, 'updatePlayerId']);
+    Route::get('/health-conditions-one', [HealthConditionController::class, 'show']);
 
     // Antrian User
     Route::post('/queues', [QueueController::class, 'store']);
@@ -34,23 +34,23 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
     Route::get('/queues/current', [QueueController::class, 'currentQueue']);
     Route::get('/queues/history', [QueueController::class, 'history']);
     Route::get('/queue/current-active', [QueueController::class, 'antrianSekarang']);
-
-
+    Route::post('/queues/cancel', [QueueController::class, 'cancelQueue']);
 
     // Admin Only
     Route::middleware('admin')->group(function () {
         // Auth & User Management
         Route::post('/register', [AuthController::class, 'register']);
-        Route::get('/users/search', [UserController::class, 'search']);
         Route::get('/users/{id}', [UserController::class, 'showById']);
         Route::get('/users', [UserController::class, 'index']);
         Route::put('users/{id}/update-class-department', [AuthController::class, 'updateClassAndDepartment']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
-        // Data Kesehatan
+        // Data Kdesehatan
         Route::post('/health-conditions', [HealthConditionController::class, 'store']);
-        Route::put('/health-conditions/{id}', [HealthConditionController::class, 'update']);
-        Route::delete('/health-conditions/{id}', [HealthConditionController::class, 'destroy']);
         Route::get('/health-conditions-all', [HealthConditionController::class, 'index']);
+        Route::put('/health-conditions/{userId}/{idUserCondition}', [HealthConditionController::class, 'update']);
+        Route::delete('/health-conditions/{userId}/{idUserCondition}', [HealthConditionController::class, 'destroy']);
+        Route::get('/healthcondition/{userid}', [HealthConditionController::class, 'getByUserId']); 
 
         // Antrian Admin
         Route::get('/admin/queues/today', [QueueAdminController::class, 'today']);
@@ -60,15 +60,25 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
         Route::put('/admin/queues/{id}/process', [QueueAdminController::class, 'process']);
         Route::put('/admin/queues/{id}/finish', [QueueAdminController::class, 'finish']);
         Route::put('/admin/queues/{id}/skip', [QueueAdminController::class, 'skip']);
+        Route::get('/admin/queue/history/user/{id}', [QueueAdminController::class, 'userHistory']);
 
-        // Data Tambahan
-        Route::get('/departments', [DepartmentController::class, 'index']);
-        Route::get('/grades', [GradeController::class, 'index']);
+        // Data Departments
+        Route::prefix('departments')->group(function () {
+            Route::get('/', [DepartmentController::class, 'index']);
+            Route::post('/', [DepartmentController::class, 'store']);
+            Route::get('/{id}', [DepartmentController::class, 'show']);
+            Route::put('/{id}', [DepartmentController::class, 'update']);
+            Route::delete('/{id}', [DepartmentController::class, 'destroy']);
+        });
 
-        Route::get('/admin/department/{department}', [UserController::class, 'filterByDepartment']);
-        Route::get('/admin/class/{class}/grades/{grades}', [UserController::class, 'filterByClassAndGrade']);
-        Route::get('/admin/class/{class}/department/{department}', [UserController::class, 'filterByClassAndDepartment']);
-        Route::get('/admin/class/{class}', [UserController::class, 'filterByClass']);
+        // Data Grades
+        Route::prefix('grades')->group(function () {
+            Route::get('/', [GradeController::class, 'index']);
+            Route::post('/', [GradeController::class, 'store']);
+            Route::get('/{id}', [GradeController::class, 'show']);
+            Route::put('/{id}', [GradeController::class, 'update']);
+            Route::delete('/{id}', [GradeController::class, 'destroy']);
+        });
 
         // CATEGORY
         Route::post('/categories', [BlogController::class, 'createCategory']);
