@@ -24,64 +24,7 @@ class UserController extends Controller
             'data' => $users
         ], 200);
     }
-    public function filterByDepartment($department)
-    {
-        $users = User::where('name_department', $department)->get();
-        return response()->json($users);
-    }
-
-    public function filterByClassAndGrade($class, $grades)
-    {
-        $users = User::where('class', $class)
-                     ->where('name_grades', $grades)
-                     ->get();
-    
-        return response()->json($users);
-    }
-    
-    public function filterByClassAndDepartment(Request $request)
-    {
-        $class = $request->input('class');
-        $department = $request->input('department');
-    
-        // Filter berdasarkan class dan name_department
-        $users = User::where('class', $class)
-                     ->where('name_department', $department)
-                     ->get();
-    
-        return response()->json($users);
-    }
-    
-    
-
-    public function filterByClass($class)
-    {
-        $users = User::where('class', $class)->get();
-        return response()->json($users);
-    }
-    
-    /**
-     * Mencari user berdasarkan nama.
-     * Gunakan query param `?name=nama`.
-     * Contoh: /api/users/search?name=agus
-     * Hanya dapat diakses oleh admin.
-     */
-    public function search(Request $request)
-    {
-        $name = $request->query('name');
-
-        $request->validate([
-            'name' => 'required|string'
-        ]);
-
-        $users = User::where('name', 'like', '%' . $name . '%')->get();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Search results',
-            'data' => $users
-        ]);
-    }
+   
 
     /**
      * Menampilkan detail user berdasarkan ID.
@@ -122,7 +65,7 @@ class UserController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
-    
+
         $validator = Validator::make($request->all(), [
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
             'phone_number' => 'sometimes|numeric|digits_between:10,15',
@@ -132,7 +75,7 @@ class UserController extends Controller
             'name_walikelas' => 'sometimes|string|max:255',
             'absent' => 'sometimes|integer|min:1|max:40',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -140,19 +83,19 @@ class UserController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-    
+
         // Ambil data yang boleh diubah
         $data = $request->except(['name', 'class', 'name_grades', 'name_department']);
         $user->fill($data);
         $user->save();
-    
+
         return response()->json([
             'status' => true,
             'message' => 'Profile updated successfully',
             'data' => $user
         ], 200);
     }
-    
+
 
     public function updatePlayerId(Request $request)
     {
@@ -166,4 +109,30 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Player ID updated']);
     }
+    /**
+     * Mengubah status user menjadi inactive (soft delete).
+     * Hanya dapat diakses oleh admin.
+     * Contoh: DELETE /api/users/{id}
+     */
+    public function destroy($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $user->status = 'inactive';
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'User deactivated (soft deleted) successfully',
+            'data' => $user
+        ]);
+    }
+
 }

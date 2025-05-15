@@ -36,6 +36,21 @@ class QueueAdminController extends Controller
         return response()->json(['data' => $query->get()]);
     }
 
+    // History antrian berdasarkan ID user
+    public function userHistory($userId)
+    {
+        $queues = Queue::with('user')
+            ->where('user_id', $userId)
+            ->orderBy('queue_date', 'desc')
+            ->get();
+
+        return response()->json([
+            'message' => $queues->isEmpty() ? 'Tidak ada riwayat antrian untuk user ini' : 'Riwayat antrian user ditemukan',
+            'data' => $queues,
+        ]);
+    }
+
+
     // Statistik ringkas
     public function stats()
     {

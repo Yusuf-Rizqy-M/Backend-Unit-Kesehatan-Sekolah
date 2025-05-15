@@ -31,7 +31,8 @@ class User extends Authenticatable
         'name_parent',
         'name_walikelas',
         'absent',
-        'name_grades'
+        'name_grades',
+        'status'
     ];
 
     /**

@@ -91,25 +91,25 @@ class QueueController extends Controller
     public function history()
     {
         $user = Auth::user();
-    
+
         $history = Queue::where('user_id', $user->id)
             ->orderBy('queue_date', 'desc')
             ->get()
             ->map(function ($item) {
                 $diffDays = Carbon::parse($item->queue_date)->diffInDays(Carbon::today());
-    
+
                 $item->day_label = match ($diffDays) {
                     0 => 'Hari ini',
                     1 => 'Kemarin',
                     default => "$diffDays hari yang lalu",
                 };
-    
+
                 return $item;
             });
-    
+
         return response()->json($history);
     }
-    
+
 
     // 5. MELIHAT ANTRIAN YANG SEDANG DIPROSES (untuk tampilan user)
     public function antrianSekarang()
@@ -129,4 +129,30 @@ class QueueController extends Controller
             ] : null
         ]);
     }
+
+    // 6. MEMBATALKAN ANTRIAN YANG MASIH AKTIF (waiting / processing)
+    public function cancelQueue()
+    {
+        $user = Auth::user();
+
+        $activeQueue = Queue::where('user_id', $user->id)
+            ->whereIn('status', ['waiting', 'processing'])
+            ->whereDate('queue_date', Carbon::today())
+            ->first();
+
+        if (!$activeQueue) {
+            return response()->json([
+                'message' => 'Tidak ada antrian aktif untuk dibatalkan.'
+            ], 404);
+        }
+
+        $activeQueue->status = 'skipped';
+        $activeQueue->save();
+
+        return response()->json([
+            'message' => 'Antrian berhasil dibatalkan.',
+            'data' => $activeQueue
+        ]);
+    }
+
 }

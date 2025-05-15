@@ -15,16 +15,27 @@ class CreateHealthConditionsTable extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('admin_id')->constrained('users')->onDelete('cascade');
+        
+            // Kolom ini harus didefinisikan dulu sebelum digunakan dalam unique
+            $table->unsignedInteger('id_user_condition')->nullable();
+
+        
             $table->integer('tension');
             $table->integer('temperature');
-            $table->decimal('height', 5, 2); // contoh 170.5
-            $table->decimal('weight', 5, 2); // contoh 65.3
+            $table->decimal('height', 5, 2);
+            $table->decimal('weight', 5, 2);
             $table->integer('spo2');
+            $table->integer('pulse');
+            $table->text('therapy');
+            $table->text('anamnesis');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
+        
+            // Pindahkan ke bawah setelah kolom didefinisikan
+            $table->unique(['user_id', 'id_user_condition']);
         });
+        
     }
-    
-    
 
     /**
      * Reverse the migrations.
