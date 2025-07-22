@@ -1,20 +1,24 @@
 <?php
 
 namespace App\Console\Commands;
-use App\Models\Queue;
+
 use Illuminate\Console\Command;
+use App\Models\Queue;
 use Carbon\Carbon;
+
 class ExpireOldQueues extends Command
 {
     protected $signature = 'queue:expire';
-    protected $description = 'Tandai antrian lama yang belum selesai sebagai expired';
+    protected $description = 'Menandai antrian sebagai expired jika tanggal sudah lewat dan status masih waiting';
+
     public function handle()
     {
-        $updated = Queue::where('status', 'waiting')
-            ->whereDate('queue_date', '<', Carbon::today())
+        $now = Carbon::now();
+
+        $expiredQueues = Queue::where('status', 'waiting')
+            ->where('queue_date', '<', $now)
             ->update(['status' => 'skipped']);
 
-        $this->info("Antrian expired: $updated");
+        $this->info("Antrian expired: {$expiredQueues}");
     }
-
 }
