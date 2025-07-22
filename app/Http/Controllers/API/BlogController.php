@@ -30,12 +30,18 @@ class BlogController extends Controller
             ], 409);
         }
 
-        $path = $request->hasFile('image') ? $request->file('image')->store('categories', 'public') : null;
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = $image->getClientOriginalName(); // Use original filename or generate a unique one if needed
+            $path = $image->storeAs('categories', $imageName, 'public');
+            $imageUrl = 'https://api-uks.rplrus.com/storage/categories/' . $imageName;
+        }
 
         $category = Category::create([
             'title' => $request->title,
             'description' => $request->description,
-            'image' => $path ? Storage::url($path) : null,
+            'image' => $imageUrl,
             'status' => 'active',
         ]);
 
@@ -107,11 +113,15 @@ class BlogController extends Controller
         }
 
         if ($request->hasFile('image')) {
+            // Delete old image if it exists
             if ($category->image) {
-                Storage::disk('public')->delete(str_replace('/storage/', '', $category->image));
+                $oldImagePath = str_replace('https://api-uks.rplrus.com/storage/', '', $category->image);
+                Storage::disk('public')->delete($oldImagePath);
             }
-            $path = $request->file('image')->store('categories', 'public');
-            $category->image = Storage::url($path);
+            $image = $request->file('image');
+            $imageName = $image->getClientOriginalName(); // Use original filename or generate a unique one if needed
+            $path = $image->storeAs('categories', $imageName, 'public');
+            $category->image = 'https://api-uks.rplrus.com/storage/categories/' . $imageName;
         }
 
         $category->save();
@@ -173,12 +183,13 @@ class BlogController extends Controller
         }
 
         $path = $request->hasFile('image') ? $request->file('image')->store('articles', 'public') : null;
+        $imageUrl = $path ? 'https://api-uks.rplrus.com' . Storage::url($path) : null;
 
         $article = Article::create([
             'category_id' => $request->category_id,
             'title' => $request->title,
             'description' => $request->description,
-            'image' => $path ? Storage::url($path) : null,
+            'image' => $imageUrl,
             'status' => 'active',
         ]);
 
@@ -246,7 +257,7 @@ class BlogController extends Controller
                 Storage::disk('public')->delete(str_replace('/storage/', '', $article->image));
             }
             $path = $request->file('image')->store('articles', 'public');
-            $article->image = Storage::url($path);
+            $article->image = 'https://api-uks.rplrus.com' . Storage::url($path);
         }
 
         $article->save();

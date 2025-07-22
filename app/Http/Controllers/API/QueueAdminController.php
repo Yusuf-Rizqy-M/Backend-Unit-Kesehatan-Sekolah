@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
+use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -110,4 +111,17 @@ class QueueAdminController extends Controller
 
         return response()->json(['message' => 'Antrian dilewati']);
     }
+    public function getStatistikPengunjung()
+{
+    $data = Queue::select(
+                DB::raw("MONTH(created_at) as bulan"),
+                DB::raw("COUNT(DISTINCT user_id) as total")
+            )
+            ->groupBy(DB::raw("MONTH(created_at)"))
+            ->orderBy(DB::raw("MONTH(created_at)"))
+            ->get();
+
+    return response()->json($data);
+}
+
 }

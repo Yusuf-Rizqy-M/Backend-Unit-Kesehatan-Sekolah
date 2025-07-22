@@ -24,7 +24,7 @@ class UserController extends Controller
             'data' => $users
         ], 200);
     }
-   
+
 
     /**
      * Menampilkan detail user berdasarkan ID.
@@ -134,5 +134,14 @@ class UserController extends Controller
             'data' => $user
         ]);
     }
+    public function totaluser()
+    {
+        $totalUsers = User::count();
 
+        return response()->json([
+            'status' => true,
+            'message' => 'Total users retrieved successfully',
+            'total' => $totalUsers
+        ], 200);
+    }
 }

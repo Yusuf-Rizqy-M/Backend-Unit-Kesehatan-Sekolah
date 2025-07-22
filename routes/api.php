@@ -10,6 +10,7 @@ use App\Http\Controllers\API\QueueAdminController;
 use App\Http\Controllers\API\DepartmentController;
 use App\Http\Controllers\API\GradeController;
 use App\Http\Controllers\API\BlogController;
+use App\Http\Controllers\API\StaffController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [ResetPasswordController::class, 'requestReset']);
@@ -20,6 +21,9 @@ Route::get('/categories/{categoryId}/article/{articleId}', [BlogController::clas
 Route::get('categories/{id}', [BlogController::class, 'getCategory']);
 Route::get('categories', [BlogController::class, 'getCategories']);
 Route::get('/categories/{id}/articles', [BlogController::class, 'getArticlesByCategory']);
+Route::get('/staff', [StaffController::class, 'index']);
+Route::get('/staff/{id}', [StaffController::class, 'show']);
+
 Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
     // Umum (user & admin)
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -35,24 +39,30 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
     Route::get('/queues/history', [QueueController::class, 'history']);
     Route::get('/queue/current-active', [QueueController::class, 'antrianSekarang']);
     Route::post('/queues/cancel', [QueueController::class, 'cancelQueue']);
+    Route::get('/queues/latest', [QueueController::class, 'latestQueue']);
+    Route::get('/queue/status', [QueueController::class, 'checkQueueStatus']);
+    
 
     // Admin Only
     Route::middleware('admin')->group(function () {
         // Auth & User Management
+        Route::get('/users/count', [UserController::class, 'totaluser']);
         Route::post('/register', [AuthController::class, 'register']);
         Route::get('/users/{id}', [UserController::class, 'showById']);
         Route::get('/users', [UserController::class, 'index']);
         Route::put('users/{id}/update-class-department', [AuthController::class, 'updateClassAndDepartment']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
+
         // Data Kdesehatan
         Route::post('/health-conditions', [HealthConditionController::class, 'store']);
         Route::get('/health-conditions-all', [HealthConditionController::class, 'index']);
         Route::put('/health-conditions/{userId}/{idUserCondition}', [HealthConditionController::class, 'update']);
         Route::delete('/health-conditions/{userId}/{idUserCondition}', [HealthConditionController::class, 'destroy']);
-        Route::get('/healthcondition/{userid}', [HealthConditionController::class, 'getByUserId']); 
+        Route::get('/healthcondition/{userid}', [HealthConditionController::class, 'getByUserId']);
 
         // Antrian Admin
+          Route::get('/admin/queues/totalUniqueQueueUsers', [QueueController::class, 'totalUniqueQueueUsers']);
         Route::get('/admin/queues/today', [QueueAdminController::class, 'today']);
         Route::get('/admin/queues/current', [QueueAdminController::class, 'current']);
         Route::get('/admin/queues/history', [QueueAdminController::class, 'history']);
@@ -61,6 +71,12 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
         Route::put('/admin/queues/{id}/finish', [QueueAdminController::class, 'finish']);
         Route::put('/admin/queues/{id}/skip', [QueueAdminController::class, 'skip']);
         Route::get('/admin/queue/history/user/{id}', [QueueAdminController::class, 'userHistory']);
+        Route::get('/admin/queues/total-completed-today', [QueueController::class, 'totalCompletedToday']);
+        Route::get('/admin/queues/total-waiting-today', [QueueController::class, 'totalWaitingToday']);
+        Route::get('/admin/queues/total-processing-today', [QueueController::class, 'totalProcessingToday']);
+        Route::get('/admin/queues/total-skipped-today', [QueueController::class, 'totalSkippedToday']);
+      Route::get('/dashboard/pengunjung', [QueueAdminController::class, 'getStatistikPengunjung']);
+
 
         // Data Departments
         Route::prefix('departments')->group(function () {
@@ -89,5 +105,12 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
         Route::post('/articles', [BlogController::class, 'createArticle']);
         Route::put('/articles/{id}', [BlogController::class, 'updateArticle']);
         Route::delete('/articles/{id}', [BlogController::class, 'deleteArticle']);
+
+        Route::prefix('staff')->group(function () {
+            Route::post('/', [StaffController::class, 'store']);
+            Route::put('/{id}', [StaffController::class, 'update']);
+            Route::delete('/{id}', [StaffController::class, 'destroy']);
+        });
+
     });
 });

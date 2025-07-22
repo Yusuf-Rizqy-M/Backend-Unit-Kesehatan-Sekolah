@@ -151,6 +151,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->role,
+                    'status' => $user->status, // Tambahkan status di sini
                     'expired_at' => $expiresAt->toDateTimeString()
                 ]
             ], 200);
@@ -254,4 +255,6 @@ class AuthController extends Controller
             'data' => $user
         ], 200);
     }
+
+
 }
