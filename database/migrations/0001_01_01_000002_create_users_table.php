@@ -16,22 +16,9 @@ return new class extends Migration {
             $table->enum('role', ['admin', 'user'])->default('user');
             $table->unsignedBigInteger('phone_number')->nullable();
             $table->enum('gender', ['male', 'female'])->nullable();
-            $table->enum('name_department', ['RPL', 'Animasi 2D', 'Animasi 3D', 'DKV DG', 'DKV TG'])->nullable();
             $table->enum('class', ['10', '11', '12', 'Lulus', 'Keluar'])->nullable();
-            $table->enum('name_grades', [
-                'Animasi 3D 1',
-                'Animasi 3D 2',
-                'Animasi 3D 3',
-                'Animasi 2D 4',
-                'Animasi 2D 5',
-                'RPL 1',
-                'RPL 2',
-                'DKV DG 1',
-                'DKV DG 2',
-                'DKV DG 3',
-                'DKV TG 4',
-                'DKV TG 5',
-            ])->nullable();
+            $table->string('name_department')->nullable();
+            $table->string('name_grades')->nullable();
             $table->unsignedBigInteger('no_hp_parent')->nullable();
             $table->string('name_parent')->nullable();
             $table->string('name_walikelas')->nullable();

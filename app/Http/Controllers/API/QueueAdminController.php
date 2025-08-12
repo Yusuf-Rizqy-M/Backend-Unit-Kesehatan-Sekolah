@@ -21,6 +21,17 @@ class QueueAdminController extends Controller
         return response()->json(['data' => $queues]);
     }
 
+    // Antrian kemarin
+    public function yesterday()
+    {
+        $queues = Queue::with('user')
+            ->whereDate('queue_date', Carbon::yesterday())
+            ->orderBy('queue_number')
+            ->get();
+
+        return response()->json(['data' => $queues]);
+    }
+
     // History semua antrian (filter optional)
     public function history(Request $request)
     {
@@ -50,7 +61,6 @@ class QueueAdminController extends Controller
             'data' => $queues,
         ]);
     }
-
 
     // Statistik ringkas
     public function stats()
@@ -111,17 +121,17 @@ class QueueAdminController extends Controller
 
         return response()->json(['message' => 'Antrian dilewati']);
     }
+
     public function getStatistikPengunjung()
-{
-    $data = Queue::select(
-                DB::raw("MONTH(created_at) as bulan"),
-                DB::raw("COUNT(DISTINCT user_id) as total")
-            )
-            ->groupBy(DB::raw("MONTH(created_at)"))
-            ->orderBy(DB::raw("MONTH(created_at)"))
-            ->get();
+    {
+        $data = Queue::select(
+                    DB::raw("MONTH(created_at) as bulan"),
+                    DB::raw("COUNT(DISTINCT user_id) as total")
+                )
+                ->groupBy(DB::raw("MONTH(created_at)"))
+                ->orderBy(DB::raw("MONTH(created_at)"))
+                ->get();
 
-    return response()->json($data);
-}
-
+        return response()->json($data);
+    }
 }

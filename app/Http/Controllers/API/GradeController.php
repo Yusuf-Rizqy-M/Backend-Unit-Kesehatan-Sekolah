@@ -10,19 +10,27 @@ use Illuminate\Support\Facades\Validator;
 
 class GradeController extends Controller
 {
-    // Menampilkan semua grade
-    public function index()
-    {
-        $grades = Grade::with('department')->get()->map(function ($grade) {
-            return [
-                'id' => $grade->id,
-                'name' => $grade->name,
-                'department_name' => $grade->department->name,
-            ];
-        });
+    // Menampilkan semua grade dengan status active
+// Menampilkan semua grade dengan status active
+public function index()
+{
+    $grades = Grade::with('department')
+                   ->where('status', 'active')
+                   ->get()
+                   ->map(function ($grade) {
+                       return [
+                           'id' => $grade->id,
+                           'name' => $grade->name,
+                           'department_id' => $grade->department_id, // ditambahkan
+                           'department_name' => $grade->department->name,
+                           'class' => $grade->class,
+                           'status' => $grade->status
+                       ];
+                   });
 
-        return response()->json($grades);
-    }
+    return response()->json($grades);
+}
+
 
     // Membuat grade baru
     public function store(Request $request)
@@ -39,7 +47,10 @@ class GradeController extends Controller
             ], 422);
         }
 
-        $grade = Grade::create($request->only(['name', 'class', 'department_id']));
+        $grade = Grade::create(array_merge(
+            $request->only(['name', 'class', 'department_id']),
+            ['status' => 'active'] // Set status default ke 'active'
+        ));
 
         return response()->json([
             'message' => 'Grade created successfully',
@@ -47,7 +58,8 @@ class GradeController extends Controller
                 'id' => $grade->id,
                 'name' => $grade->name,
                 'class' => $grade->class,
-                'department_id' => $grade->department_id
+                'department_id' => $grade->department_id,
+                'status' => $grade->status // Tambahkan status dalam respons
             ]
         ], 201);
     }
@@ -69,7 +81,10 @@ class GradeController extends Controller
             ], 422);
         }
 
-        $grade->update($request->only(['name', 'class', 'department_id']));
+        $grade->update(array_merge(
+            $request->only(['name', 'class', 'department_id']),
+            ['status' => 'active'] // Pastikan status tetap 'active' saat update
+        ));
 
         return response()->json([
             'message' => 'Grade updated successfully',
@@ -77,7 +92,8 @@ class GradeController extends Controller
                 'id' => $grade->id,
                 'name' => $grade->name,
                 'class' => $grade->class,
-                'department_id' => $grade->department_id
+                'department_id' => $grade->department_id,
+                'status' => $grade->status // Tambahkan status dalam respons
             ]
         ]);
     }
@@ -94,6 +110,7 @@ class GradeController extends Controller
             'message' => 'Grade deactivated successfully'
         ]);
     }
+
     // Menampilkan detail grade berdasarkan ID
     public function show($id)
     {
@@ -112,8 +129,8 @@ class GradeController extends Controller
             'department' => [
                 'id' => $grade->department->id,
                 'name' => $grade->department->name
-            ]
+            ],
+            'status' => $grade->status // Tambahkan status dalam respons
         ]);
     }
-
 }
