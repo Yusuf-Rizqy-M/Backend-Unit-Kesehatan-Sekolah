@@ -13,7 +13,6 @@ return new class extends Migration {
         Schema::create('grades', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('class', ['10', '11', '12']);
             $table->foreignId('department_id')->constrained()->onDelete('cascade');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();

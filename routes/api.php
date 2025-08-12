@@ -11,6 +11,7 @@ use App\Http\Controllers\API\DepartmentController;
 use App\Http\Controllers\API\GradeController;
 use App\Http\Controllers\API\BlogController;
 use App\Http\Controllers\API\StaffController;
+use App\Http\Controllers\API\UserImportController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [ResetPasswordController::class, 'requestReset']);
@@ -52,6 +53,7 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
         Route::get('/users', [UserController::class, 'index']);
         Route::put('users/{id}/update-class-department', [AuthController::class, 'updateClassAndDepartment']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        Route::post('/users/import-excel', [UserImportController::class, 'importExcel']);
 
 
         // Data Kdesehatan
@@ -64,6 +66,7 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
         // Antrian Admin
           Route::get('/admin/queues/totalUniqueQueueUsers', [QueueController::class, 'totalUniqueQueueUsers']);
         Route::get('/admin/queues/today', [QueueAdminController::class, 'today']);
+        Route::get('/admin/queues/yesterday', [QueueAdminController::class, 'yesterday']);
         Route::get('/admin/queues/current', [QueueAdminController::class, 'current']);
         Route::get('/admin/queues/history', [QueueAdminController::class, 'history']);
         Route::get('/admin/queues/stats', [QueueAdminController::class, 'stats']);

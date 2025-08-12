@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Http\Controllers\API;
-
+use App\Models\Department;
+use App\Models\Grade;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class AuthController extends Controller
 
         $role = $request->input('role');
 
-        // Validasi dinamis tergantung role
+        // Validasi awal
         $rules = [
             'name' => 'required|string|min:3|max:255',
             'email' => 'required|email:rfc,dns|unique:users,email',
@@ -33,37 +34,12 @@ class AuthController extends Controller
         ];
 
         if ($role === 'user') {
+            $rules['department_id'] = 'required|exists:departments,id';
+            $rules['grade_id'] = 'required|exists:grades,id';
             $rules['class'] = 'required|in:10,11,12';
-            $rules['name_department'] = 'required|in:RPL,Animasi 3D,Animasi 2D,DKV DG,DKV TG';
-            $rules['name_grades'] = 'required|string';
         }
 
-        $customMessages = [
-            'email.email' => 'Jangan pakai email asal-asalan',
-            'role.in' => 'Role harus admin atau user',
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $customMessages);
-
-        // Validasi kombinasi jurusan dan kelas (hanya jika role user)
-        if ($role === 'user') {
-            $validator->after(function ($validator) use ($request) {
-                $department = $request->input('name_department');
-                $grade = $request->input('name_grades');
-
-                $rules = [
-                    'RPL' => ['RPL 1', 'RPL 2'],
-                    'Animasi 3D' => ['Animasi 3D 1', 'Animasi 3D 2', 'Animasi 3D 3'],
-                    'Animasi 2D' => ['Animasi 2D 4', 'Animasi 2D 5'],
-                    'DKV DG' => ['DKV DG 1', 'DKV DG 2', 'DKV DG 3'],
-                    'DKV TG' => ['DKV TG 4', 'DKV TG 5'],
-                ];
-
-                if (isset($rules[$department]) && !in_array($grade, $rules[$department])) {
-                    $validator->errors()->add('name_grades', 'Kelas dan jurusan tidak cocok dengan name_grades yang dipilih.');
-                }
-            });
-        }
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -73,18 +49,37 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Tambahan pengecekan department & grade cocok
+        if ($role === 'user') {
+            $grade = Grade::find($request->grade_id);
+            if (!$grade || $grade->department_id != $request->department_id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'The selected grade does not belong to the selected department.'
+                ], 422);
+            }
+        }
+
+        // Ambil name_department dan name_grades dari tabel lain
+        $departmentName = null;
+        $gradeName = null;
+
+        if ($role === 'user') {
+            $departmentName = Department::where('id', $request->department_id)->value('name');
+            $gradeName = Grade::where('id', $request->grade_id)->value('name');
+        }
+
         // Simpan user
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'role' => $request->role,
-            'class' => $request->role === 'user' ? $request->class : null,
-            'name_department' => $request->role === 'user' ? $request->name_department : null,
-            'name_grades' => $request->role === 'user' ? $request->name_grades : null,
+            'class' => $role === 'user' ? $request->class : null,
+            'name_department' => $departmentName,
+            'name_grades' => $gradeName,
         ]);
 
-        // Buat token
         $success['token'] = $user->createToken('auth_token')->plainTextToken;
         $success['name'] = $user->name;
         $success['role'] = $user->role;
@@ -183,7 +178,6 @@ class AuthController extends Controller
     }
     public function updateClassAndDepartment(Request $request, $id)
     {
-        // Hanya admin yang boleh akses
         if (Auth::check() && Auth::user()->role !== 'admin') {
             return response()->json([
                 'status' => false,
@@ -191,12 +185,11 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Validasi input
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|min:3|max:255',
-            'name_department' => 'nullable|in:RPL,Animasi 2D,Animasi 3D,DKV DG,DKV TG',
+            'department_id' => 'nullable|exists:departments,id',
+            'grade_id' => 'nullable|exists:grades,id',
             'class' => 'nullable|in:10,11,12,Lulus,Keluar',
-            'name_grades' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -215,46 +208,30 @@ class AuthController extends Controller
             ], 404);
         }
 
-        $department = $request->input('name_department');
-        $grade = $request->input('name_grades');
-        $class = $request->input('class');
-
-        // Validasi kombinasi jurusan dan kelas hanya jika keduanya tersedia
-        $rules = [
-            'RPL' => ['RPL 1', 'RPL 2'],
-            'Animasi 3D' => ['Animasi 3D 1', 'Animasi 3D 2', 'Animasi 3D 3'],
-            'Animasi 2D' => ['Animasi 2D 4', 'Animasi 2D 5'],
-            'DKV DG' => ['DKV DG 1', 'DKV DG 2', 'DKV DG 3'],
-            'DKV TG' => ['DKV TG 4', 'DKV TG 5'],
-        ];
-
-        if ($department && $grade && !in_array($class, ['Lulus', 'Keluar'])) {
-            if (!in_array($grade, $rules[$department] ?? [])) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Kelas dan jurusan tidak cocok dengan name_grades yang dipilih.'
-                ], 422);
-            }
+        // Ambil name_department & name_grades dari tabel lain
+        if ($request->filled('department_id')) {
+            $user->name_department = Department::where('id', $request->department_id)->value('name');
         }
 
-        // Update hanya field yang dikirim
-        if ($request->filled('name'))
+        if ($request->filled('grade_id')) {
+            $user->name_grades = Grade::where('id', $request->grade_id)->value('name');
+        }
+
+        if ($request->filled('class')) {
+            $user->class = $request->class;
+        }
+
+        if ($request->filled('name')) {
             $user->name = $request->name;
-        if ($class)
-            $user->class = $class;
-        if ($grade)
-            $user->name_grades = $grade;
-        if ($department)
-            $user->name_department = $department;
+        }
 
         $user->save();
 
         return response()->json([
             'status' => true,
-            'message' => 'User class, department, and name updated successfully',
+            'message' => 'User updated successfully',
             'data' => $user
         ], 200);
     }
-
 
 }

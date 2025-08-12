@@ -9,10 +9,20 @@ use Illuminate\Support\Facades\Validator;
 
 class DepartmentController extends Controller
 {
-    // Menampilkan semua department
+    // Menampilkan semua department dengan status active
     public function index()
     {
-        $departments = Department::all();
+        $departments = Department::where('status', 'active')
+                                ->get()
+                                ->map(function ($department) {
+                                    return [
+                                        'id' => $department->id,
+                                        'name' => $department->name,
+                                        'desc' => $department->desc,
+                                        'status' => $department->status, // Tambahkan kolom status
+                                    ];
+                                });
+
         return response()->json($departments);
     }
 
@@ -27,9 +37,14 @@ class DepartmentController extends Controller
             ], 404);
         }
 
-        return response()->json($department);
+        return response()->json([
+            'id' => $department->id,
+            'name' => $department->name,
+            'desc' => $department->desc,
+            'status' => $department->status, // Tambahkan status dalam respons
+            'grades' => $department->grades // Tetap sertakan grades jika ada
+        ]);
     }
-
 
     // Membuat department baru
     public function store(Request $request)
@@ -45,11 +60,19 @@ class DepartmentController extends Controller
             ], 422);
         }
 
-        $department = Department::create($request->only(['name', 'desc']));
+        $department = Department::create(array_merge(
+            $request->only(['name', 'desc']),
+            ['status' => 'active'] // Set status default ke 'active'
+        ));
 
         return response()->json([
             'message' => 'Department created successfully',
-            'data' => $department
+            'data' => [
+                'id' => $department->id,
+                'name' => $department->name,
+                'desc' => $department->desc,
+                'status' => $department->status // Tambahkan status dalam respons
+            ]
         ], 201);
     }
 
@@ -69,11 +92,19 @@ class DepartmentController extends Controller
             ], 422);
         }
 
-        $department->update($request->only(['name', 'desc']));
+        $department->update(array_merge(
+            $request->only(['name', 'desc']),
+            ['status' => 'active'] // Pastikan status tetap 'active' saat update
+        ));
 
         return response()->json([
             'message' => 'Department updated successfully',
-            'data' => $department
+            'data' => [
+                'id' => $department->id,
+                'name' => $department->name,
+                'desc' => $department->desc,
+                'status' => $department->status // Tambahkan status dalam respons
+            ]
         ]);
     }
 
