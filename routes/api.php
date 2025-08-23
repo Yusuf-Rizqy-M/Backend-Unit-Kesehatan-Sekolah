@@ -12,6 +12,7 @@ use App\Http\Controllers\API\GradeController;
 use App\Http\Controllers\API\BlogController;
 use App\Http\Controllers\API\StaffController;
 use App\Http\Controllers\API\UserImportController;
+use App\Http\Controllers\API\ObatController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [ResetPasswordController::class, 'requestReset']);
@@ -42,7 +43,7 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
     Route::post('/queues/cancel', [QueueController::class, 'cancelQueue']);
     Route::get('/queues/latest', [QueueController::class, 'latestQueue']);
     Route::get('/queue/status', [QueueController::class, 'checkQueueStatus']);
-    
+
 
     // Admin Only
     Route::middleware('admin')->group(function () {
@@ -56,7 +57,7 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
         Route::post('/users/import-excel', [UserImportController::class, 'importExcel']);
 
 
-        // Data Kdesehatan
+        // Data Kesehatan
         Route::post('/health-conditions', [HealthConditionController::class, 'store']);
         Route::get('/health-conditions-all', [HealthConditionController::class, 'index']);
         Route::put('/health-conditions/{userId}/{idUserCondition}', [HealthConditionController::class, 'update']);
@@ -64,7 +65,7 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
         Route::get('/healthcondition/{userid}', [HealthConditionController::class, 'getByUserId']);
 
         // Antrian Admin
-          Route::get('/admin/queues/totalUniqueQueueUsers', [QueueController::class, 'totalUniqueQueueUsers']);
+        Route::get('/admin/queues/totalUniqueQueueUsers', [QueueController::class, 'totalUniqueQueueUsers']);
         Route::get('/admin/queues/today', [QueueAdminController::class, 'today']);
         Route::get('/admin/queues/yesterday', [QueueAdminController::class, 'yesterday']);
         Route::get('/admin/queues/current', [QueueAdminController::class, 'current']);
@@ -78,7 +79,7 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
         Route::get('/admin/queues/total-waiting-today', [QueueController::class, 'totalWaitingToday']);
         Route::get('/admin/queues/total-processing-today', [QueueController::class, 'totalProcessingToday']);
         Route::get('/admin/queues/total-skipped-today', [QueueController::class, 'totalSkippedToday']);
-      Route::get('/dashboard/pengunjung', [QueueAdminController::class, 'getStatistikPengunjung']);
+        Route::get('/dashboard/pengunjung', [QueueAdminController::class, 'getStatistikPengunjung']);
 
 
         // Data Departments
@@ -109,6 +110,21 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
         Route::put('/articles/{id}', [BlogController::class, 'updateArticle']);
         Route::delete('/articles/{id}', [BlogController::class, 'deleteArticle']);
 
+        //OBAT
+        Route::prefix('obats')->group(function () {
+            Route::post('/', [ObatController::class, 'store']);
+            Route::get('/', [ObatController::class, 'index']);
+            Route::get('/{id}', [ObatController::class, 'show']);
+            Route::put('/{id}', [ObatController::class, 'update']);
+            Route::delete('/{id}', [ObatController::class, 'destroy']);
+
+            // Tambah/Kurangi stok
+            Route::post('/{id}/tambah-stok', [ObatController::class, 'tambahStok']);
+            Route::post('/{id}/kurangi-stok', [ObatController::class, 'kurangiStok']);
+        });
+
+
+        //STAFF
         Route::prefix('staff')->group(function () {
             Route::post('/', [StaffController::class, 'store']);
             Route::put('/{id}', [StaffController::class, 'update']);
