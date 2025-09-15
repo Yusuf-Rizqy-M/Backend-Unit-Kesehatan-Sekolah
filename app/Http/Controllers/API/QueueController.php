@@ -189,7 +189,7 @@ public function checkQueueStatus()
     public function totalCompletedToday()
     {
         $totalCompleted = Queue::whereDate('queue_date', Carbon::today())
-            ->where('status', 'completed')
+            ->where('status', 'done')
             ->count();
 
         return response()->json([
