@@ -67,7 +67,7 @@ class GuruImportController extends Controller
             }
 
             // Validasi status
-            if (!in_array(strtolower($row['status']), ['aktif', 'non-aktif'])) {
+            if (!in_array(strtolower($row['status']), ['active', 'inactive'])) {
                 $failed[] = [
                     'row' => $index + 2,
                     'reason' => 'Status tidak valid. Harus aktif atau non-aktif'
