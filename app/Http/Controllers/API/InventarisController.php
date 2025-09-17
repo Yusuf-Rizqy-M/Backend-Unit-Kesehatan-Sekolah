@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
 use App\Models\Inventaris;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class InventarisController extends Controller
 {
@@ -19,16 +20,27 @@ class InventarisController extends Controller
     {
         $validated = $request->validate([
             'nama_barang' => 'required|string|max:255',
-            'jumlah' => 'required|integer|min:1',
-            'kondisi' => 'required|string|max:100',
-            'status' => 'in:active,inactive'
+            'kategori'    => 'nullable|string|max:255',
+            'jumlah'      => 'required|integer|min:1',
+            'kondisi'     => 'required|in:baik,rusak ringan,rusak berat',
+            'status'      => 'nullable|in:active,inactive',
+        ], [
+            'nama_barang.required' => 'Nama barang wajib diisi.',
+            'nama_barang.string'   => 'Nama barang harus berupa teks.',
+            'jumlah.required'      => 'Jumlah wajib diisi.',
+            'jumlah.integer'       => 'Jumlah harus berupa angka.',
+            'jumlah.min'           => 'Jumlah minimal 1.',
+            'kondisi.required'     => 'Kondisi wajib dipilih.',
+            'kondisi.in'           => 'Kondisi hanya boleh: baik, rusak ringan, rusak berat.',
+            'status.in'            => 'Status hanya boleh: active atau inactive.',
         ]);
 
         $inventaris = Inventaris::create([
             'nama_barang' => $validated['nama_barang'],
-            'jumlah' => $validated['jumlah'],
-            'kondisi' => $validated['kondisi'],
-            'status' => $validated['status'] ?? 'active',
+            'kategori'    => $validated['kategori'],
+            'jumlah'      => $validated['jumlah'],
+            'kondisi'     => $validated['kondisi'] ?? 'baik',
+            'status'      => $validated['status'] ?? 'active',
         ]);
 
         return response()->json([
@@ -49,9 +61,16 @@ class InventarisController extends Controller
     {
         $validated = $request->validate([
             'nama_barang' => 'sometimes|string|max:255',
-            'jumlah' => 'sometimes|integer|min:1',
-            'kondisi' => 'sometimes|string|max:100',
-            'status' => 'sometimes|in:active,inactive'
+            'kategori'    => 'sometimes|nullable|string|max:255',
+            'jumlah'      => 'sometimes|integer|min:1',
+            'kondisi'     => 'sometimes|in:baik,rusak ringan,rusak berat',
+            'status'      => 'sometimes|in:active,inactive',
+        ], [
+            'nama_barang.string' => 'Nama barang harus berupa teks.',
+            'jumlah.integer'     => 'Jumlah harus berupa angka.',
+            'jumlah.min'         => 'Jumlah minimal 1.',
+            'kondisi.in'         => 'Kondisi hanya boleh: baik, rusak ringan, rusak berat.',
+            'status.in'          => 'Status hanya boleh: active atau inactive.',
         ]);
 
         $inventaris = Inventaris::findOrFail($id);
@@ -84,7 +103,7 @@ class InventarisController extends Controller
 
         return response()->json([
             'message' => 'Status inventaris berhasil diubah',
-            'status' => $inventaris->status,
+            'status'  => $inventaris->status,
         ]);
     }
 }

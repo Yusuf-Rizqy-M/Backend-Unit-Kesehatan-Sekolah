@@ -13,6 +13,10 @@ use App\Http\Controllers\API\BlogController;
 use App\Http\Controllers\API\StaffController;
 use App\Http\Controllers\API\UserImportController;
 use App\Http\Controllers\API\ObatController;
+use App\Http\Controllers\API\GuruImportController;
+use App\Http\Controllers\API\GuruController;
+use App\Http\Controllers\API\HealthConditionGuruController;
+use App\Http\Controllers\API\InventarisController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [ResetPasswordController::class, 'requestReset']);
@@ -130,6 +134,32 @@ Route::middleware(['auth:sanctum', 'check_token_expiry'])->group(function () {
             Route::put('/{id}', [StaffController::class, 'update']);
             Route::delete('/{id}', [StaffController::class, 'destroy']);
         });
+        // GURU
+        Route::prefix('gurus')->group(function () {
+            Route::post('/import-excel', [GuruImportController::class, 'importExcel']);
+            Route::get('/', [GuruController::class, 'index']);
+            Route::get('/count', [GuruController::class, 'totalGuru']);
+            Route::get('/{id}', [GuruController::class, 'show']);
+            Route::post('/', [GuruController::class, 'store']);
+            Route::put('/{id}', [GuruController::class, 'update']);
+            Route::delete('/{id}', [GuruController::class, 'destroy']);
+        });
 
+        // Data Kesehatan Guru
+        Route::post('/teacher-health-conditions', [HealthConditionGuruController::class, 'store']);
+        Route::get('/teacher-health-conditions-all', [HealthConditionGuruController::class, 'index']);
+        Route::put('/teacher-health-conditions/{teacherId}/{idTeacherCondition}', [HealthConditionGuruController::class, 'update']);
+        Route::delete('/teacher-health-conditions/{teacherId}/{idTeacherCondition}', [HealthConditionGuruController::class, 'destroy']);
+        Route::get('/teacher-healthcondition/{teacherId}', [HealthConditionGuruController::class, 'getByGuruId']);
+
+
+        Route::prefix('inventaris')->group(function () {
+            Route::get('/', [InventarisController::class, 'index']);
+            Route::post('/', [InventarisController::class, 'store']);
+            Route::get('/{id}', [InventarisController::class, 'show']);
+            Route::put('/{id}', [InventarisController::class, 'update']);
+            Route::delete('/{id}', [InventarisController::class, 'destroy']);
+        });
+        Route::patch('inventaris/{id}/status', [InventarisController::class, 'updateStatus']);
     });
 });
